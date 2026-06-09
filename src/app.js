@@ -1,5 +1,6 @@
-﻿const express = require('express');
-const cors = require('cors');
+﻿import express from 'express';
+import cors from 'cors';
+import rotasUsuarios from './routes/usuarioRoutes.js';
 
 const app = express();
 
@@ -14,4 +15,6 @@ app.get('/', (req, res) => {
   });
 });
 
-module.exports = app;
+app.use('/usuarios', rotasUsuarios);
+
+export default app;
