@@ -48,12 +48,43 @@ async function deletarProduto(id) {
   return resultado.rows[0];
 }
 
+async function comprarProduto(id, quantidadeCompra) {
+  const produto = await buscarProdutoPorId(id);
+
+  if (!produto) {
+    return {
+      erro: 'Produto nao encontrado',
+      produto: null
+    };
+  }
+
+  if (produto.quantidade < quantidadeCompra) {
+    return {
+      erro: 'Estoque insuficiente',
+      produto: null
+    };
+  }
+
+  const novaQuantidade = produto.quantidade - quantidadeCompra;
+
+  const resultado = await conexao.query(
+    'UPDATE products SET quantidade = $1 WHERE id = $2 RETURNING id, nome, preco, quantidade, criado_em',
+    [novaQuantidade, id]
+  );
+
+  return {
+    erro: null,
+    produto: resultado.rows[0]
+  };
+}
+
 export default {
   criarProduto,
   listarProdutos,
   buscarProdutoPorId,
   atualizarProduto,
-  deletarProduto
+  deletarProduto,
+  comprarProduto
 };
 
 export {
@@ -61,5 +92,6 @@ export {
   listarProdutos,
   buscarProdutoPorId,
   atualizarProduto,
-  deletarProduto
+  deletarProduto,
+  comprarProduto
 };

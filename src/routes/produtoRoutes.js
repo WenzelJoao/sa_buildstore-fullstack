@@ -39,6 +39,51 @@ rotasProdutos.get('/', async (req, res) => {
   }
 });
 
+rotasProdutos.post('/:id/comprar', async (req, res) => {
+  try {
+    const { quantidade } = req.body;
+    const quantidadeCompra = Number(quantidade);
+
+    if (!quantidade || Number.isNaN(quantidadeCompra) || quantidadeCompra <= 0) {
+      return res.status(400).json({
+        status: false,
+        mensagem: 'Quantidade da compra e obrigatoria',
+        data: null
+      });
+    }
+
+    const resultado = await produtoService.comprarProduto(req.params.id, quantidadeCompra);
+
+    if (resultado.erro === 'Produto nao encontrado') {
+      return res.status(404).json({
+        status: false,
+        mensagem: resultado.erro,
+        data: null
+      });
+    }
+
+    if (resultado.erro) {
+      return res.status(400).json({
+        status: false,
+        mensagem: resultado.erro,
+        data: null
+      });
+    }
+
+    return res.json({
+      status: true,
+      mensagem: 'Compra realizada com sucesso',
+      data: resultado.produto
+    });
+  } catch (erro) {
+    return res.status(500).json({
+      status: false,
+      mensagem: 'Erro ao realizar compra',
+      data: null
+    });
+  }
+});
+
 rotasProdutos.get('/:id', async (req, res) => {
   try {
     const produto = await produtoService.buscarProdutoPorId(req.params.id);
