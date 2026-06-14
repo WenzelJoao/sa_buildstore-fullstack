@@ -48,12 +48,22 @@ async function deletarUsuario(id) {
   return resultado.rows[0];
 }
 
+async function login(email, senha) {
+  const resultado = await conexao.query(
+    'SELECT id, nome, email, senha, criado_em FROM users WHERE email = $1 AND senha = $2',
+    [email, senha]
+  );
+
+  return resultado.rows[0];
+}
+
 export default {
   criarUsuario,
   listarUsuarios,
   buscarUsuarioPorId,
   atualizarUsuario,
-  deletarUsuario
+  deletarUsuario,
+  login
 };
 
 export {
@@ -61,5 +71,6 @@ export {
   listarUsuarios,
   buscarUsuarioPorId,
   atualizarUsuario,
-  deletarUsuario
+  deletarUsuario,
+  login
 };

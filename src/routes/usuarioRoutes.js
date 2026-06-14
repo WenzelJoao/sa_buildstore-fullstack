@@ -39,6 +39,42 @@ rotasUsuarios.get('/', async (req, res) => {
   }
 });
 
+rotasUsuarios.post('/login', async (req, res) => {
+  try {
+    const { email, senha } = req.body;
+
+    if (!email || !senha) {
+      return res.status(400).json({
+        status: false,
+        mensagem: 'Email e senha sao obrigatorios',
+        data: null
+      });
+    }
+
+    const usuario = await usuarioService.login(email, senha);
+
+    if (!usuario) {
+      return res.status(400).json({
+        status: false,
+        mensagem: 'Email ou senha invalidos',
+        data: null
+      });
+    }
+
+    return res.json({
+      status: true,
+      mensagem: 'Login realizado com sucesso',
+      data: usuario
+    });
+  } catch (erro) {
+    return res.status(500).json({
+      status: false,
+      mensagem: 'Erro ao realizar login',
+      data: null
+    });
+  }
+});
+
 rotasUsuarios.get('/:id', async (req, res) => {
   try {
     const usuario = await usuarioService.buscarUsuarioPorId(req.params.id);
