@@ -3,9 +3,47 @@ import produtoService from '../services/produtoService.js';
 
 const rotasProdutos = express.Router();
 
+function validarDadosProduto(dadosProduto) {
+  const { nome, preco, quantidade } = dadosProduto;
+  const precoNumero = Number(preco);
+  const quantidadeNumero = Number(quantidade);
+
+  if (!nome || preco === undefined || preco === null || preco === '') {
+    return 'Nome e preco sao obrigatorios';
+  }
+
+  if (quantidade === undefined || quantidade === null || quantidade === '') {
+    return 'Quantidade e obrigatoria';
+  }
+
+  if (Number.isNaN(precoNumero) || precoNumero <= 0) {
+    return 'Preco deve ser um numero maior que zero';
+  }
+
+  if (Number.isNaN(quantidadeNumero) || quantidadeNumero < 0) {
+    return 'Quantidade deve ser um numero maior ou igual a zero';
+  }
+
+  return null;
+}
+
 rotasProdutos.post('/', async (req, res) => {
   try {
-    const produto = await produtoService.criarProduto(req.body);
+    const erroValidacao = validarDadosProduto(req.body);
+
+    if (erroValidacao) {
+      return res.status(400).json({
+        status: false,
+        mensagem: erroValidacao,
+        data: null
+      });
+    }
+
+    const produto = await produtoService.criarProduto({
+      nome: req.body.nome,
+      preco: Number(req.body.preco),
+      quantidade: Number(req.body.quantidade)
+    });
 
     return res.status(201).json({
       status: true,
@@ -112,7 +150,21 @@ rotasProdutos.get('/:id', async (req, res) => {
 
 rotasProdutos.put('/:id', async (req, res) => {
   try {
-    const produto = await produtoService.atualizarProduto(req.params.id, req.body);
+    const erroValidacao = validarDadosProduto(req.body);
+
+    if (erroValidacao) {
+      return res.status(400).json({
+        status: false,
+        mensagem: erroValidacao,
+        data: null
+      });
+    }
+
+    const produto = await produtoService.atualizarProduto(req.params.id, {
+      nome: req.body.nome,
+      preco: Number(req.body.preco),
+      quantidade: Number(req.body.quantidade)
+    });
 
     if (!produto) {
       return res.status(404).json({

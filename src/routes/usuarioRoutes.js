@@ -3,8 +3,28 @@ import usuarioService from '../services/usuarioService.js';
 
 const rotasUsuarios = express.Router();
 
+function validarDadosUsuario(dadosUsuario) {
+  const { nome, email, senha } = dadosUsuario;
+
+  if (!nome || !email || !senha) {
+    return 'Nome, email e senha sao obrigatorios';
+  }
+
+  return null;
+}
+
 rotasUsuarios.post('/', async (req, res) => {
   try {
+    const erroValidacao = validarDadosUsuario(req.body);
+
+    if (erroValidacao) {
+      return res.status(400).json({
+        status: false,
+        mensagem: erroValidacao,
+        data: null
+      });
+    }
+
     const usuario = await usuarioService.criarUsuario(req.body);
 
     return res.status(201).json({
@@ -13,6 +33,14 @@ rotasUsuarios.post('/', async (req, res) => {
       data: usuario
     });
   } catch (erro) {
+    if (erro.code === '23505') {
+      return res.status(400).json({
+        status: false,
+        mensagem: 'Email ja cadastrado',
+        data: null
+      });
+    }
+
     return res.status(500).json({
       status: false,
       mensagem: 'Erro ao criar usuario',
@@ -103,6 +131,16 @@ rotasUsuarios.get('/:id', async (req, res) => {
 
 rotasUsuarios.put('/:id', async (req, res) => {
   try {
+    const erroValidacao = validarDadosUsuario(req.body);
+
+    if (erroValidacao) {
+      return res.status(400).json({
+        status: false,
+        mensagem: erroValidacao,
+        data: null
+      });
+    }
+
     const usuario = await usuarioService.atualizarUsuario(req.params.id, req.body);
 
     if (!usuario) {
@@ -119,6 +157,14 @@ rotasUsuarios.put('/:id', async (req, res) => {
       data: usuario
     });
   } catch (erro) {
+    if (erro.code === '23505') {
+      return res.status(400).json({
+        status: false,
+        mensagem: 'Email ja cadastrado',
+        data: null
+      });
+    }
+
     return res.status(500).json({
       status: false,
       mensagem: 'Erro ao atualizar usuario',
