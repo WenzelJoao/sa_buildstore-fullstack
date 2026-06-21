@@ -1,128 +1,93 @@
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { FaUserAlt } from 'react-icons/fa'
-import { Link } from "react-router"
+import { useState } from "react"
+import { FaBoxes, FaTag } from 'react-icons/fa'
+
+const produtosDestaque = [
+    { id: 1, nome: "Cimento CP II", categoria: "Basicos", preco: "35,90", quantidade: 50 },
+    { id: 2, nome: "Tijolo Baiano", categoria: "Alvenaria", preco: "1,20", quantidade: 1000 },
+    { id: 3, nome: "Tinta Acrilica", categoria: "Acabamento", preco: "89,90", quantidade: 30 },
+    { id: 4, nome: "Ferro 3/8", categoria: "Estrutura", preco: "45,00", quantidade: 80 }
+]
 
 const PatientsList = () => {
-    const [patients, setPatients] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
-    const [ages, setAges] = useState({})
 
-    const calculateAge = (birthdate) => {
-        if (!birthdate) return "-"
-        const today = new Date()
-        const birthdateDate = new Date(birthdate)
-        let age = today.getFullYear() - birthdateDate.getFullYear()
-        const monthDiff = today.getMonth() - birthdateDate.getMonth()
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthdateDate.getDate())) {
-            age--
-        }
-        return age
-    }
-
-    useEffect(() => {
-        const fetchPatients = async () => {
-            try {
-                const response = await axios.get("http://localhost:3000/patients")
-                if (!response) return
-
-                const patientsData = response.data
-
-                // calcula a idade de cada paciente e armazena no estado
-
-                const calculatedAges = {}
-                patientsData.forEach((patient) => {
-                    calculatedAges[patient.id] = calculateAge(patient.birthdate)
-                })
-                setAges(calculatedAges)
-                setPatients(patientsData)
-
-            } catch (error) {
-                console.error("Erro ao obter os dados de paciente", error)
-            }
-        }
-        fetchPatients()
-    }, [])
-
-    const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value)
-    }
-
-    const filteredPatients = patients.filter((patient) =>
-        [patient.fullName, patient.email, patient.phone]
+    const produtosFiltrados = produtosDestaque.filter((produto) =>
+        [produto.nome, produto.categoria]
             .join(" ")
             .toLowerCase()
             .includes(searchTerm.toLowerCase())
     )
 
-
     return (
-        <div className="bg-white shadow rounded-2xl p-6 mt-8">
-            <h2 className="text-xl font-semibold text-cyan-800 mb-4">
-                Informações Rápidas de Pacientes
-            </h2>
+        <div className="bg-white shadow-sm rounded-lg border border-stone-200 p-6 mt-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-amber-600">Catalogo interno</p>
+                    <h2 className="text-xl font-semibold text-slate-900">
+                        Produtos em destaque
+                    </h2>
+                    <p className="text-sm text-stone-600">
+                        Materiais mais consultados pela equipe da loja.
+                    </p>
+                </div>
 
-            {/* Campo de busca */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                <label htmlFor="search" className="text-gray-700 font-medium">
-                    Buscar Paciente:
+                <div className="rounded bg-amber-100 px-4 py-3 text-sm text-amber-900">
+                    <strong>Promocao:</strong> kits de pintura com desconto no balcao
+                </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between my-5 gap-3">
+                <label htmlFor="search" className="text-stone-700 font-medium">
+                    Buscar produto:
                 </label>
                 <input
                     type="text"
                     id="search"
                     value={searchTerm}
-                    onChange={handleSearchChange}
-                    placeholder="Digite o nome, email ou telefone"
-                    className="border rounded-lg px-3 py-2 w-full sm:w-80 focus:ring-2 focus:ring-cyan-600 outline-none"
-
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    placeholder="Digite nome ou categoria"
+                    className="border border-stone-300 rounded px-3 py-2 w-full sm:w-80 focus:ring-2 focus:ring-amber-500 outline-none"
                 />
             </div>
 
-            {/* Lista de pacientes */}
-
             {
-                filteredPatients.length > 0 ? (
-                    <ul className="divide-y divide-gray-200">
+                produtosFiltrados.length > 0 ? (
+                    <ul className="divide-y divide-stone-200">
                         {
-                            filteredPatients.map((patient) => (
+                            produtosFiltrados.map((produto) => (
                                 <li
-                                    key={patient.id}
-                                    className="flex flex-col sm:flex-row sm:items-center justify-between py-4"
+                                    key={produto.id}
+                                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="bg-cyan-100 text-cyan-700 p-3 rounded-full">
-                                            <FaUserAlt size={20} />
+                                        <div className="bg-stone-100 text-amber-700 p-3 rounded">
+                                            <FaBoxes size={20} />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-gray-800">{patient.fullName}</p>
-                                            <p className="text-sm text-gray-600">{patient.email}</p>
-                                            <p className="text-sm text-gray-600">{patient.phone}</p>
+                                            <p className="font-semibold text-slate-900">{produto.nome}</p>
+                                            <p className="text-sm text-stone-600">{produto.categoria}</p>
                                         </div>
                                     </div>
 
-                                    <div className="text-sm text-gray-600 mt-2 sm:mt-0 text-right">
-                                        <p><strong>Idade:</strong>{ages[patient.id] || "-"} anos</p>
-                                        <p><strong>Plano:</strong>{patient.healthInsurance || "-"}</p>
-                                        <Link
-                                            to={`/paciente/${patient.id}`}
-                                            className="text-cyan-700 font-semibold hover:underline"
-                                        >
-                                            Ver detalhes
-                                        </Link>
+                                    <div className="text-sm text-stone-700 sm:text-right">
+                                        <p className="font-semibold text-slate-900">
+                                            R$ {produto.preco}
+                                        </p>
+                                        <p>{produto.quantidade} unidades em estoque</p>
+                                        <p className="mt-1 inline-flex items-center gap-1 text-amber-700">
+                                            <FaTag size={12} /> Disponivel para orcamento
+                                        </p>
                                     </div>
-
                                 </li>
                             ))
-
                         }
                     </ul>
                 ) : (
-                    <p className="text-gray-500 text-center py-6">
-                        Nenhum paciente encontrado
+                    <p className="text-stone-500 text-center py-6">
+                        Nenhum produto encontrado
                     </p>
                 )
             }
-
         </div>
     )
 }

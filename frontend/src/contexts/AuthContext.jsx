@@ -5,24 +5,21 @@ const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
 
-    //se já tiver email no localStorage, mantém login
-
     useEffect(() => {
-        const savedEmail = localStorage.getItem("email")
+        const savedUser = localStorage.getItem("usuario")
 
-        if (savedEmail) {
-            setUser({ email: savedEmail })
+        if (savedUser) {
+            setUser(JSON.parse(savedUser))
         }
-
     }, [])
 
-    const login = (email) => {
-        localStorage.setItem("email", email)
-        setUser({ email })
+    const login = (usuario) => {
+        localStorage.setItem("usuario", JSON.stringify(usuario))
+        setUser(usuario)
     }
 
     const logout = () => {
-        localStorage.removeItem("email")
+        localStorage.removeItem("usuario")
         setUser(null)
     }
 
@@ -31,9 +28,6 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     )
-
 }
-
-//hook customizado para consumir o contexto
 
 export const useAuth = () => useContext(AuthContext)

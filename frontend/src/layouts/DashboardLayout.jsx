@@ -19,7 +19,7 @@ const DashboardLayout = () => {
                     {
                         user && (
                             <div className="flex items-center gap-4">
-                                <span className="text-stone-700">Bem vindo, {user.email}</span>
+                                <span className="text-stone-700">Bem vindo, {user.nome || user.email}</span>
                                 <button
                                     onClick={logout}
                                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"

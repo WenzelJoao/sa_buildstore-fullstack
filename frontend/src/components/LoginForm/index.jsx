@@ -25,32 +25,29 @@ const LoginForm = () => {
         e.preventDefault()
 
         try {
-            const response = await apiClient.post('/login', {
+            const response = await apiClient.post('/usuarios/login', {
                 email, senha: password
             })
 
-            if (response.data.length === 0) {
-                toast.error('Funcionario nao encontrado. Verifique email e senha.', {
+            if (!response.data.status) {
+                toast.error(response.data.mensagem || 'Funcionario nao encontrado. Verifique email e senha.', {
                     autoClose: 3000,
                     hideProgressBar: true
                 })
                 return
             }
 
-            localStorage.setItem("accessToken", response?.data?.accessToken)
-            localStorage.setItem("refreshToken", response?.data?.refreshToken)
-
-            login(email)
+            login(response.data.data)
 
             toast.success('Login realizado com sucesso!', {
                 autoClose: 2000
             })
 
-            setTimeout(() => navigate('/dashboard', 2000))
+            setTimeout(() => navigate('/dashboard'), 1000)
 
         } catch (error) {
             console.error('Erro ao verificar funcionario', error)
-            toast.error('Erro ao conectar com o servidor', {
+            toast.error(error.response?.data?.mensagem || 'Erro ao conectar com o servidor', {
                 autoClose: 3000
             })
         }

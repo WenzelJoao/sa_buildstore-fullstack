@@ -1,345 +1,176 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import React, { useState } from 'react'
 import { toast } from 'react-toastify'
-
-//modal
-
 import Modal from '../Modal'
 
-
+const produtos = [
+    { id: 1, nome: "Cimento", preco: 35.90, quantidade: 50 },
+    { id: 2, nome: "Tijolo", preco: 1.20, quantidade: 1000 },
+    { id: 3, nome: "Areia", preco: 120.00, quantidade: 20 },
+    { id: 4, nome: "Brita", preco: 140.00, quantidade: 15 },
+    { id: 5, nome: "Tinta", preco: 89.90, quantidade: 30 },
+    { id: 6, nome: "Ferro", preco: 45.00, quantidade: 80 },
+    { id: 7, nome: "Bloco", preco: 3.50, quantidade: 500 }
+]
 
 function ConsultationForm() {
     const [searchTerm, setSearchTerm] = useState("")
-    const [patients, setPatients] = useState([])
-    const [selectedPatient, setSelectedPatient] = useState(null)
+    const [selectedProduct, setSelectedProduct] = useState(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
+    const [quantidade, setQuantidade] = useState(1)
 
-    const [formData, setFormData] = useState({
-        reason: "",
-        date: "",
-        time: "",
-        description: "",
-        medication: "",
-        dosagePrecautions: "",
-    })
-
-
-    // busca pacientes
-
-    useEffect(() => {
-        const fetchPatients = async () => {
-            try {
-                const response = await axios.get("http://localhost:3000/patients")
-                setPatients(response.data)
-            } catch (error) {
-                console.error("Erro ao obter dados dos pacientes", error)
-            }
-        }
-        fetchPatients()
-    }, [])
-
-
-    // funções auxiliares
-
-    //controle do campo de filtro
-
-    const handleSearchChange = (e) => setSearchTerm(e.target.value)
-
-    //filtro dos pacientes
-
-    const filteredPatients = patients.filter(
-        (patient) =>
-            patient.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            patient.id.toString().includes(searchTerm)
+    const filteredProducts = produtos.filter(
+        (produto) =>
+            produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            produto.id.toString().includes(searchTerm)
     )
 
-    //seleciona o paciente  e abre modal
-
-    const handleSelectPatient = (patient) => {
-        setSelectedPatient(patient)
+    const handleSelectProduct = (produto) => {
+        setSelectedProduct(produto)
+        setQuantidade(1)
         setIsModalOpen(true)
     }
 
-    //fecha modal e reseta o valor do paciente selecionado
-
     const handleCloseModal = () => {
         setIsModalOpen(false)
-        setSelectedPatient(null)
+        setSelectedProduct(null)
     }
-
-    //Controla os campos do estado formData dinamicamente
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({ ...prev, [name]: value }))
-    }
-
-    //reseta o form
-
-    const resetForm = () => {
-        setFormData({
-            reason: "",
-            date: "",
-            time: "",
-            description: "",
-            medication: "",
-            dosagePrecautions: "",
-        })
-    }
-
-    //envia os dados
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!selectedPatient) return
+        if (!selectedProduct) return
 
-        try {
-            setIsSaving(true)
+        setIsSaving(true)
 
-            const dataToSave = {
-                patientId: selectedPatient.id,
-                ...formData
-            }
-
-            await axios.post("http://localhost:3000/consults", dataToSave)
-
-            toast.success("Consulta cadastrada com sucesso!", {
-                autoClose: 2000,
+        setTimeout(() => {
+            toast.success("Compra preparada. A baixa real de estoque entra na etapa de integracao.", {
+                autoClose: 2500,
                 hideProgressBar: true
             })
-
-            resetForm()
+            setIsSaving(false)
             handleCloseModal()
-
-        } catch (error) {
-            console.error("Erro ao cadastrar consulta!")
-            toast.error("Erro ao cadastrar consulta!", {
-                autoClose: 2000,
-                hideProgressBar: true
-            })
-        }
+        }, 500)
     }
 
-
+    const total = selectedProduct ? selectedProduct.preco * Number(quantidade || 0) : 0
 
     return (
-        <section className='p-6 text-gray-800'>
-            {/* campo de busca */}
+        <section className='p-6 bg-white rounded-lg border border-stone-200 shadow-sm text-stone-800'>
+            <div className='mb-6'>
+                <p className='text-sm font-semibold uppercase tracking-wide text-amber-600'>Compras</p>
+                <h2 className='text-2xl font-bold text-slate-900'>Registrar compra de produto</h2>
+                <p className='text-sm text-stone-600'>
+                    Fluxo visual para selecionar material e preparar a baixa de estoque.
+                </p>
+            </div>
 
             <div className='mb-6'>
                 <label className='block text-sm font-semibold mb-2'>
-                    Buscar paciente para cadastrar a consulta
+                    Buscar produto
                 </label>
                 <input
                     type='text'
                     value={searchTerm}
-                    onChange={handleSearchChange}
-                    placeholder='Digite o nome ou o registro do paciente'
-                    className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder='Digite o nome ou codigo do produto'
+                    className='w-full border border-stone-300 p-2 rounded focus:ring-2 focus:ring-amber-500 outline-none'
                 />
-
             </div>
-
-            {/* Lista de pacientes */}
 
             <ul className='space-y-3'>
                 {
-                    filteredPatients.map((patient) => (
+                    filteredProducts.map((produto) => (
                         <li
-                            key={patient.id}
-                            className='p-4 border rounded-lg shadow-sm flex justify-between items-center hover:bg-gray-50 transition'
+                            key={produto.id}
+                            className='p-4 border border-stone-200 rounded-lg shadow-sm flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center hover:bg-stone-50 transition'
                         >
                             <div>
-                                <p className='text-sm'>
-                                    <strong>Registro:</strong> {patient.id}
+                                <p className='text-sm text-stone-600'>
+                                    <strong>Codigo:</strong> {produto.id}
                                 </p>
-                                <p className='text-sm'>
-                                    <strong>Nome:</strong> {patient.fullName}
-                                </p>
-
-                                <p className='text-sm'>
-                                    <strong>Convênio:</strong> {patient.healthInsurance}
+                                <p className='font-semibold text-slate-900'>
+                                    {produto.nome}
                                 </p>
 
+                                <p className='text-sm text-stone-600'>
+                                    Estoque atual: {produto.quantidade} unidades
+                                </p>
                             </div>
 
-                            <button
-                                onClick={() => handleSelectPatient(patient)}
-                                className='bg-cyan-700 text-white px-3 py-2 rounded-lg hover:bg-cyan-600 cursor-pointer'
-                            >
-                                Selecionar
-                            </button>
-
+                            <div className='flex items-center gap-3'>
+                                <span className='font-semibold text-slate-900'>
+                                    R$ {produto.preco.toFixed(2).replace('.', ',')}
+                                </span>
+                                <button
+                                    onClick={() => handleSelectProduct(produto)}
+                                    className='bg-amber-500 text-slate-950 font-semibold px-3 py-2 rounded hover:bg-amber-400 cursor-pointer'
+                                >
+                                    Comprar
+                                </button>
+                            </div>
                         </li>
                     ))
                 }
             </ul>
 
-
-            {/* Modal de cadastro de consulta */}
-
             <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
                 {
-                    selectedPatient && (
+                    selectedProduct && (
                         <>
-                            {/* Título */}
-                            <h2 className='text-lg font-bold mb-4 text-cyan-700'>
-                                Cadastrar consulta para {selectedPatient.fullName}
+                            <h2 className='text-lg font-bold mb-4 text-slate-900'>
+                                Comprar {selectedProduct.nome}
                             </h2>
 
-                            {/* Dados básicos */}
-                            <div className='mb-4 text-sm text-gray-700'>
-                                <p>
-                                    <strong>Email:</strong> {selectedPatient.email}
-                                </p>
-                                <p>
-                                    <strong>Telefone:</strong> {selectedPatient.phone}
-                                </p>
+                            <div className='mb-4 rounded bg-stone-100 p-3 text-sm text-stone-700'>
+                                <p><strong>Preco unitario:</strong> R$ {selectedProduct.preco.toFixed(2).replace('.', ',')}</p>
+                                <p><strong>Estoque disponivel:</strong> {selectedProduct.quantidade} unidades</p>
                             </div>
 
-                            {/* Formulário */}
-
                             <form onSubmit={handleSubmit} className='space-y-4'>
-                                {/* motivo da consulta */}
                                 <div>
-                                    <label htmlFor='reason' className='block text-sm font-medium mb-1'>
-                                        Motivo da Consulta
+                                    <label htmlFor='quantidade' className='block text-sm font-medium mb-1'>
+                                        Quantidade
                                     </label>
 
                                     <input
-                                        type='text'
-                                        name='reason'
-                                        id='reason'
-                                        value={formData.reason}
-                                        onChange={handleInputChange}
+                                        type='number'
+                                        name='quantidade'
+                                        id='quantidade'
+                                        min='1'
+                                        max={selectedProduct.quantidade}
+                                        value={quantidade}
+                                        onChange={(e) => setQuantidade(e.target.value)}
                                         required
-                                        className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
+                                        className='w-full border border-stone-300 p-2 rounded focus:ring-2 focus:ring-amber-500 outline-none'
                                     />
                                 </div>
 
-                                <div className='grid grid-cols-2 gap-4'>
-                                    {/* data */}
-                                    <div>
-                                        <label htmlFor='date' className='block text-sm font-medium mb-1'>
-                                            Data
-                                        </label>
-
-                                        <input
-                                            type='date'
-                                            name='date'
-                                            id='date'
-                                            value={formData.date}
-                                            onChange={handleInputChange}
-                                            required
-                                            className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
-                                        />
-                                    </div>
-                                    {/* Hora */}
-                                    <div>
-                                        <label htmlFor='time' className='block text-sm font-medium mb-1'>
-                                            Horário
-                                        </label>
-
-                                        <input
-                                            type='time'
-                                            name='time'
-                                            id='time'
-                                            value={formData.time}
-                                            onChange={handleInputChange}
-                                            required
-                                            className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
-                                        />
-                                    </div>
-
-                                </div> {/* fechamento do grid*/}
-
-                                {/* Descrição do problema */}
-
-                                <div>
-                                    <label htmlFor='description' className='block text-sm font-medium mb-1'>
-                                        Descrição do problema
-                                    </label>
-
-                                    <textarea
-                                        name='description'
-                                        id='description'
-                                        value={formData.description}
-                                        rows={3}
-                                        onChange={handleInputChange}
-                                        required
-                                        className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none resize-none'
-                                    />
+                                <div className='rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900'>
+                                    Total estimado: <strong>R$ {total.toFixed(2).replace('.', ',')}</strong>
                                 </div>
-
-                                {/* Medicação receitada */}
-
-                                <div>
-                                    <label htmlFor='medication' className='block text-sm font-medium mb-1'>
-                                        Medicação receitada
-                                    </label>
-
-                                    <input
-                                        type='text'
-                                        name='medication'
-                                        id='medication'
-                                        value={formData.medication}
-                                        onChange={handleInputChange}
-                                        required
-                                        className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
-                                    />
-                                </div>
-
-
-                                {/* Dosagem e Precauções */}
-
-                                <div>
-                                    <label htmlFor='dosagePrecautions' className='block text-sm font-medium mb-1'>
-                                        Dosagem e Precauções
-                                    </label>
-
-                                    <input
-                                        type='text'
-                                        name='dosagePrecautions'
-                                        id='dosagePrecautions'
-                                        value={formData.dosagePrecautions}
-                                        onChange={handleInputChange}
-                                        required
-                                        className='w-full border p-2 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none'
-                                    />
-                                </div>
-
-                                {/* botões */}
 
                                 <div className='flex justify-end gap-3 pt-4'>
                                     <button
                                         type='button'
                                         onClick={handleCloseModal}
-                                        className='px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition'
+                                        className='px-4 py-2 bg-stone-200 text-stone-700 rounded hover:bg-stone-300 transition'
                                     >
                                         Fechar
                                     </button>
 
-
                                     <button
                                         type='submit'
                                         disabled={isSaving}
-                                        className='px-4 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-600 disabled:opacity-50 transition'
+                                        className='px-4 py-2 bg-amber-500 text-slate-950 font-semibold rounded hover:bg-amber-400 disabled:opacity-50 transition'
                                     >
-                                        {isSaving ? "Salvando..." : "Salvar"}
+                                        {isSaving ? "Salvando..." : "Confirmar"}
                                     </button>
-
-
                                 </div>
-
-
-
                             </form>
                         </>
                     )
                 }
             </Modal>
-
         </section>
     )
 }

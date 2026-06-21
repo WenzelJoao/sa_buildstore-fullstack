@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import apiClient from '../../api/api'
 
 const RegisterUser = () => {
+    const [nome, setNome] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -12,6 +13,7 @@ const RegisterUser = () => {
     const isPasswordValid = () => password.length >= 8 && password === confirmPassword
 
     const resetForm = () => {
+        setNome('')
         setEmail('')
         setPassword('')
         setConfirmPassword('')
@@ -29,8 +31,10 @@ const RegisterUser = () => {
         setIsSaving(true)
 
         try {
-            await apiClient.post('/cadastro', {
-                email, senha: password
+            await apiClient.post('/usuarios', {
+                nome,
+                email,
+                senha: password
             })
 
             setIsSaving(false)
@@ -41,7 +45,7 @@ const RegisterUser = () => {
             })
         } catch (error) {
             console.error('Erro ao criar funcionario', error)
-            toast.error('Erro ao criar funcionario!', {
+            toast.error(error.response?.data?.mensagem || 'Erro ao criar funcionario!', {
                 autoClose: 2000,
                 hideProgressBar: true
             })
@@ -55,6 +59,18 @@ const RegisterUser = () => {
             <p className='mb-6 text-center text-sm text-stone-600'>Cadastro simples para acesso interno.</p>
 
             <form onSubmit={handleSubmit} className='space-y-4'>
+                <fieldset>
+                    <label htmlFor='nome' className='block text-sm font-medium mb-1 text-stone-700'>Nome</label>
+                    <input
+                        type='text'
+                        id='nome'
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        required
+                        className='w-full p-2 border border-stone-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500'
+                    />
+                </fieldset>
+
                 <fieldset>
                     <label htmlFor='email' className='block text-sm font-medium mb-1 text-stone-700'>Email</label>
                     <input
