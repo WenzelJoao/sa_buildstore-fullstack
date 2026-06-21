@@ -1,23 +1,32 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { FaBoxes } from "react-icons/fa"
+import apiClient from "../../api/api"
 
-const produtos = [
-  { id: 1, nome: "Cimento", categoria: "Basicos", preco: "35,90", quantidade: 50 },
-  { id: 2, nome: "Tijolo", categoria: "Alvenaria", preco: "1,20", quantidade: 1000 },
-  { id: 3, nome: "Areia", categoria: "Agregados", preco: "120,00", quantidade: 20 },
-  { id: 4, nome: "Brita", categoria: "Agregados", preco: "140,00", quantidade: 15 },
-  { id: 5, nome: "Tinta", categoria: "Acabamento", preco: "89,90", quantidade: 30 },
-  { id: 6, nome: "Ferro", categoria: "Estrutura", preco: "45,00", quantidade: 80 },
-  { id: 7, nome: "Bloco", categoria: "Alvenaria", preco: "3,50", quantidade: 500 }
-]
+const formatarPreco = (preco) => Number(preco).toFixed(2).replace('.', ',')
 
 const MedicalRecordList = () => {
+  const [produtos, setProdutos] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const buscarProdutos = async () => {
+      try {
+        const response = await apiClient.get("/produtos")
+        setProdutos(response.data.data || [])
+      } catch (error) {
+        console.error("Erro ao obter produtos:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    buscarProdutos()
+  }, [])
 
   const produtosFiltrados = produtos.filter((produto) => {
     return (
       produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      produto.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
       produto.id.toString().includes(searchTerm)
     )
   })
@@ -30,7 +39,7 @@ const MedicalRecordList = () => {
           Materiais de construcao
         </h2>
         <p className="text-sm text-stone-600">
-          Consulta rapida dos produtos que serao conectados ao estoque do sistema.
+          Consulta rapida dos produtos cadastrados no back-end.
         </p>
       </div>
 
@@ -43,43 +52,47 @@ const MedicalRecordList = () => {
           id="search"
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
-          placeholder="Digite nome, codigo ou categoria"
+          placeholder="Digite nome ou codigo"
           className="w-full sm:w-1/2 p-2 border border-stone-300 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {produtosFiltrados.length > 0 ? (
-          produtosFiltrados.map((produto) => (
-            <article
-              key={produto.id}
-              className="p-4 bg-stone-50 rounded-lg border border-stone-200 hover:shadow-md transition-shadow"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-900">
-                  <FaBoxes className="text-amber-600" />
-                  <strong>{produto.nome}</strong>
+      {isLoading ? (
+        <p className="text-stone-600">Carregando produtos...</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {produtosFiltrados.length > 0 ? (
+            produtosFiltrados.map((produto) => (
+              <article
+                key={produto.id}
+                className="p-4 bg-stone-50 rounded-lg border border-stone-200 hover:shadow-md transition-shadow"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-slate-900">
+                    <FaBoxes className="text-amber-600" />
+                    <strong>{produto.nome}</strong>
+                  </div>
+                  <span className="rounded bg-slate-900 px-2 py-1 text-xs text-white">
+                    #{produto.id}
+                  </span>
                 </div>
-                <span className="rounded bg-slate-900 px-2 py-1 text-xs text-white">
-                  #{produto.id}
-                </span>
-              </div>
 
-              <p className="text-sm text-stone-700">
-                <strong>Categoria:</strong> {produto.categoria}
-              </p>
-              <p className="text-sm text-stone-700">
-                <strong>Preco:</strong> R$ {produto.preco}
-              </p>
-              <p className="text-sm text-stone-700">
-                <strong>Estoque:</strong> {produto.quantidade} unidades
-              </p>
-            </article>
-          ))
-        ) : (
-          <p className="text-stone-600">Nenhum produto encontrado.</p>
-        )}
-      </div>
+                <p className="text-sm text-stone-700">
+                  <strong>Preco:</strong> R$ {formatarPreco(produto.preco)}
+                </p>
+                <p className="text-sm text-stone-700">
+                  <strong>Estoque:</strong> {produto.quantidade} unidades
+                </p>
+                <p className="mt-3 text-xs text-stone-500">
+                  Produto sincronizado com PostgreSQL
+                </p>
+              </article>
+            ))
+          ) : (
+            <p className="text-stone-600">Nenhum produto encontrado.</p>
+          )}
+        </div>
+      )}
     </section>
   )
 }

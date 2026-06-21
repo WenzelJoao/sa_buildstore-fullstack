@@ -1,18 +1,31 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { FaBoxes, FaTag } from 'react-icons/fa'
+import apiClient from "../../api/api"
 
-const produtosDestaque = [
-    { id: 1, nome: "Cimento CP II", categoria: "Basicos", preco: "35,90", quantidade: 50 },
-    { id: 2, nome: "Tijolo Baiano", categoria: "Alvenaria", preco: "1,20", quantidade: 1000 },
-    { id: 3, nome: "Tinta Acrilica", categoria: "Acabamento", preco: "89,90", quantidade: 30 },
-    { id: 4, nome: "Ferro 3/8", categoria: "Estrutura", preco: "45,00", quantidade: 80 }
-]
+const formatarPreco = (preco) => Number(preco).toFixed(2).replace('.', ',')
 
 const PatientsList = () => {
+    const [produtos, setProdutos] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
+    const [isLoading, setIsLoading] = useState(true)
 
-    const produtosFiltrados = produtosDestaque.filter((produto) =>
-        [produto.nome, produto.categoria]
+    useEffect(() => {
+        const buscarProdutos = async () => {
+            try {
+                const response = await apiClient.get('/produtos')
+                setProdutos(response.data.data || [])
+            } catch (error) {
+                console.error("Erro ao obter produtos", error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        buscarProdutos()
+    }, [])
+
+    const produtosFiltrados = produtos.filter((produto) =>
+        [produto.nome, produto.id]
             .join(" ")
             .toLowerCase()
             .includes(searchTerm.toLowerCase())
@@ -27,12 +40,12 @@ const PatientsList = () => {
                         Produtos em destaque
                     </h2>
                     <p className="text-sm text-stone-600">
-                        Materiais mais consultados pela equipe da loja.
+                        Produtos carregados diretamente do estoque cadastrado.
                     </p>
                 </div>
 
                 <div className="rounded bg-amber-100 px-4 py-3 text-sm text-amber-900">
-                    <strong>Promocao:</strong> kits de pintura com desconto no balcao
+                    <strong>Promocao:</strong> consulte condicoes no balcao
                 </div>
             </div>
 
@@ -45,49 +58,49 @@ const PatientsList = () => {
                     id="search"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    placeholder="Digite nome ou categoria"
+                    placeholder="Digite nome ou codigo"
                     className="border border-stone-300 rounded px-3 py-2 w-full sm:w-80 focus:ring-2 focus:ring-amber-500 outline-none"
                 />
             </div>
 
-            {
-                produtosFiltrados.length > 0 ? (
-                    <ul className="divide-y divide-stone-200">
-                        {
-                            produtosFiltrados.map((produto) => (
-                                <li
-                                    key={produto.id}
-                                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="bg-stone-100 text-amber-700 p-3 rounded">
-                                            <FaBoxes size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-900">{produto.nome}</p>
-                                            <p className="text-sm text-stone-600">{produto.categoria}</p>
-                                        </div>
+            {isLoading ? (
+                <p className="text-stone-500 text-center py-6">Carregando produtos...</p>
+            ) : produtosFiltrados.length > 0 ? (
+                <ul className="divide-y divide-stone-200">
+                    {
+                        produtosFiltrados.slice(0, 4).map((produto) => (
+                            <li
+                                key={produto.id}
+                                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-stone-100 text-amber-700 p-3 rounded">
+                                        <FaBoxes size={20} />
                                     </div>
+                                    <div>
+                                        <p className="font-semibold text-slate-900">{produto.nome}</p>
+                                        <p className="text-sm text-stone-600">Codigo #{produto.id}</p>
+                                    </div>
+                                </div>
 
-                                    <div className="text-sm text-stone-700 sm:text-right">
-                                        <p className="font-semibold text-slate-900">
-                                            R$ {produto.preco}
-                                        </p>
-                                        <p>{produto.quantidade} unidades em estoque</p>
-                                        <p className="mt-1 inline-flex items-center gap-1 text-amber-700">
-                                            <FaTag size={12} /> Disponivel para orcamento
-                                        </p>
-                                    </div>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                ) : (
-                    <p className="text-stone-500 text-center py-6">
-                        Nenhum produto encontrado
-                    </p>
-                )
-            }
+                                <div className="text-sm text-stone-700 sm:text-right">
+                                    <p className="font-semibold text-slate-900">
+                                        R$ {formatarPreco(produto.preco)}
+                                    </p>
+                                    <p>{produto.quantidade} unidades em estoque</p>
+                                    <p className="mt-1 inline-flex items-center gap-1 text-amber-700">
+                                        <FaTag size={12} /> Disponivel para orcamento
+                                    </p>
+                                </div>
+                            </li>
+                        ))
+                    }
+                </ul>
+            ) : (
+                <p className="text-stone-500 text-center py-6">
+                    Nenhum produto encontrado
+                </p>
+            )}
         </div>
     )
 }
