@@ -31,22 +31,22 @@ const SideMenu = () => {
     }
 
     const linkClass = ({ isActive }) =>
-        `flex gap-2 hover:text-amber-300 ${isActive ? 'text-amber-300' : 'text-white'}`
+        `flex items-center justify-center gap-2 rounded px-2 py-2 hover:bg-slate-800 hover:text-amber-300 md:justify-start ${isActive ? 'bg-slate-800 text-amber-300' : 'text-white'}`
 
     return (
         <aside
-            className={`h-screen bg-slate-900 text-white flex flex-col justify-between transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'
+            className={`h-screen shrink-0 bg-slate-900 text-white flex flex-col justify-between transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-20 md:w-64'
                 }`}
         >
             <div className='p-4 flex items-center justify-between border-b border-slate-700'>
                 {
                     !isCollapsed && (
-                        <h1 className='text-lg font-bold text-amber-400'>BuildStore</h1>
+                        <h1 className='hidden text-lg font-bold text-amber-400 md:block'>BuildStore</h1>
                     )
                 }
                 <button
                     onClick={toggleMenu}
-                    className='text-white hover:text-amber-300 focus:outline-none'
+                    className='mx-auto text-white hover:text-amber-300 focus:outline-none md:mx-0'
                 >
                     {isCollapsed ? <MdMenu size={24} /> : <MdClose size={24} />}
                 </button>
@@ -57,31 +57,31 @@ const SideMenu = () => {
                     <li>
                         <NavLink to="/dashboard" className={linkClass}>
                             <MdDashboard size={20} />
-                            {!isCollapsed && <span>Inicio</span>}
+                            {!isCollapsed && <span className='hidden md:inline'>Inicio</span>}
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/prontuarios" className={linkClass}>
                             <FaBoxes size={20} />
-                            {!isCollapsed && <span>Catalogo</span>}
+                            {!isCollapsed && <span className='hidden md:inline'>Catalogo</span>}
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/pacientes" className={linkClass}>
                             <FaUserPlus size={20} />
-                            {!isCollapsed && <span>Novo Produto</span>}
+                            {!isCollapsed && <span className='hidden md:inline'>Novo Produto</span>}
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/consultas" className={linkClass}>
                             <MdShoppingCart size={20} />
-                            {!isCollapsed && <span>Compras</span>}
+                            {!isCollapsed && <span className='hidden md:inline'>Compras</span>}
                         </NavLink>
                     </li>
                     <li>
                         <NavLink to="/exames" className={linkClass}>
                             <FaListAlt size={20} />
-                            {!isCollapsed && <span>Usuarios</span>}
+                            {!isCollapsed && <span className='hidden md:inline'>Usuarios</span>}
                         </NavLink>
                     </li>
                 </ul>
@@ -93,7 +93,7 @@ const SideMenu = () => {
                     className='flex items-center gap-3 text-red-300 hover:text-red-500 w-full cursor-pointer'
                 >
                     <MdExitToApp size={20} />
-                    {!isCollapsed && <span>Sair</span>}
+                    {!isCollapsed && <span className='hidden md:inline'>Sair</span>}
                 </button>
             </div>
         </aside >

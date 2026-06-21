@@ -14,6 +14,10 @@ beforeEach(() => {
   queryMock.mockClear();
 });
 
+function mockColunaSenha() {
+  queryMock.mockResolvedValueOnce({ rows: [{ column_name: 'senha' }] });
+}
+
 test('deve criar um usuario', async () => {
   const usuario = {
     id: 1,
@@ -22,6 +26,7 @@ test('deve criar um usuario', async () => {
     senha: '123456'
   };
 
+  mockColunaSenha();
   queryMock.mockResolvedValueOnce({ rows: [usuario] });
 
   const resultado = await usuarioService.criarUsuario({
@@ -31,8 +36,8 @@ test('deve criar um usuario', async () => {
   });
 
   expect(resultado).toEqual(usuario);
-  expect(queryMock).toHaveBeenCalledWith(
-    'INSERT INTO users (nome, email, senha) VALUES ($1, $2, $3) RETURNING id, nome, email, senha, criado_em',
+  expect(queryMock).toHaveBeenLastCalledWith(
+    'INSERT INTO users (nome, email, senha) VALUES ($1, $2, $3) RETURNING id, nome, email, senha AS senha, criado_em',
     ['Joao', 'joao@email.com', '123456']
   );
 });
@@ -43,6 +48,7 @@ test('deve listar usuarios', async () => {
     { id: 2, nome: 'Maria', email: 'maria@email.com', senha: 'abc123' }
   ];
 
+  mockColunaSenha();
   queryMock.mockResolvedValueOnce({ rows: usuarios });
 
   const resultado = await usuarioService.listarUsuarios();
@@ -58,13 +64,14 @@ test('deve fazer login com email e senha', async () => {
     senha: '123456'
   };
 
+  mockColunaSenha();
   queryMock.mockResolvedValueOnce({ rows: [usuario] });
 
   const resultado = await usuarioService.login('joao@email.com', '123456');
 
   expect(resultado).toEqual(usuario);
-  expect(queryMock).toHaveBeenCalledWith(
-    'SELECT id, nome, email, senha, criado_em FROM users WHERE email = $1 AND senha = $2',
+  expect(queryMock).toHaveBeenLastCalledWith(
+    'SELECT id, nome, email, senha AS senha, criado_em FROM users WHERE email = $1 AND senha = $2',
     ['joao@email.com', '123456']
   );
 });

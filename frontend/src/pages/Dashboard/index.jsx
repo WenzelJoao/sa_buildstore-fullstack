@@ -12,7 +12,7 @@ const Dashboard = () => {
                 <p className='text-sm text-stone-600'>Resumo rapido da loja de materiais de construcao</p>
             </div>
 
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-2'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
                 <PatientsCounter />
                 <ConsultsCounter />
                 <ExamsCounter />

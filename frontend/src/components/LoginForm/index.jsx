@@ -24,9 +24,18 @@ const LoginForm = () => {
     const handleLogin = async (e) => {
         e.preventDefault()
 
+        if (!email.trim() || !password.trim()) {
+            toast.error('Informe email e senha para entrar.', {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+            return
+        }
+
         try {
             const response = await apiClient.post('/usuarios/login', {
-                email, senha: password
+                email: email.trim(),
+                senha: password
             })
 
             if (!response.data.status) {

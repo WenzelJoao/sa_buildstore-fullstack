@@ -8,14 +8,17 @@ const MedicalRecordList = () => {
   const [produtos, setProdutos] = useState([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
     const buscarProdutos = async () => {
       try {
         const response = await apiClient.get("/produtos")
         setProdutos(response.data.data || [])
+        setErrorMessage("")
       } catch (error) {
         console.error("Erro ao obter produtos:", error)
+        setErrorMessage("Nao foi possivel carregar o catalogo. Verifique se o back-end esta rodando.")
       } finally {
         setIsLoading(false)
       }
@@ -59,6 +62,10 @@ const MedicalRecordList = () => {
 
       {isLoading ? (
         <p className="text-stone-600">Carregando produtos...</p>
+      ) : errorMessage ? (
+        <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {errorMessage}
+        </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {produtosFiltrados.length > 0 ? (

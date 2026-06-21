@@ -23,8 +23,20 @@ const RegisterUser = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
+        if (!nome.trim() || !email.trim() || !password.trim()) {
+            toast.error('Nome, email e senha sao obrigatorios.', {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+            return
+        }
+
         if (!isPasswordValid()) {
             setIsPasswordMatch(false)
+            toast.error('As senhas devem ter pelo menos 8 caracteres e serem iguais.', {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
             return
         }
 
@@ -32,8 +44,8 @@ const RegisterUser = () => {
 
         try {
             await apiClient.post('/usuarios', {
-                nome,
-                email,
+                nome: nome.trim(),
+                email: email.trim(),
                 senha: password
             })
 

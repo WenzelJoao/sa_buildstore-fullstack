@@ -8,14 +8,17 @@ const PatientsList = () => {
     const [produtos, setProdutos] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
     const [isLoading, setIsLoading] = useState(true)
+    const [errorMessage, setErrorMessage] = useState("")
 
     useEffect(() => {
         const buscarProdutos = async () => {
             try {
                 const response = await apiClient.get('/produtos')
                 setProdutos(response.data.data || [])
+                setErrorMessage("")
             } catch (error) {
                 console.error("Erro ao obter produtos", error)
+                setErrorMessage("Nao foi possivel carregar os produtos. Verifique se o back-end esta rodando.")
             } finally {
                 setIsLoading(false)
             }
@@ -65,6 +68,10 @@ const PatientsList = () => {
 
             {isLoading ? (
                 <p className="text-stone-500 text-center py-6">Carregando produtos...</p>
+            ) : errorMessage ? (
+                <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    {errorMessage}
+                </p>
             ) : produtosFiltrados.length > 0 ? (
                 <ul className="divide-y divide-stone-200">
                     {

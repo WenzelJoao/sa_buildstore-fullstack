@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { toast } from 'react-toastify'
+import apiClient from '../../api/api'
 
 const estadoInicial = {
     nome: "",
@@ -21,16 +22,57 @@ function RegisterFormPatient() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        const precoNumero = Number(formData.preco)
+        const quantidadeNumero = Number(formData.quantidade)
+
+        if (!formData.nome.trim()) {
+            toast.error("Nome do produto e obrigatorio.", {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+            return
+        }
+
+        if (!formData.preco || Number.isNaN(precoNumero) || precoNumero <= 0) {
+            toast.error("Preco deve ser maior que zero.", {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+            return
+        }
+
+        if (formData.quantidade === "" || Number.isNaN(quantidadeNumero) || quantidadeNumero < 0) {
+            toast.error("Quantidade deve ser maior ou igual a zero.", {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+            return
+        }
+
         setIsSaving(true)
 
-        setTimeout(() => {
-            toast.success("Produto preparado para cadastro. A integracao com o estoque entra na proxima etapa.", {
+        try {
+            const response = await apiClient.post('/produtos', {
+                nome: formData.nome.trim(),
+                preco: precoNumero,
+                quantidade: quantidadeNumero
+            })
+
+            toast.success(response.data.mensagem || "Produto cadastrado com sucesso.", {
                 autoClose: 2500,
                 hideProgressBar: true
             })
             setFormData(estadoInicial)
+        } catch (error) {
+            console.error("Erro ao cadastrar produto", error)
+            toast.error(error.response?.data?.mensagem || "Erro ao cadastrar produto.", {
+                autoClose: 2500,
+                hideProgressBar: true
+            })
+        } finally {
             setIsSaving(false)
-        }, 500)
+        }
     }
 
     return (

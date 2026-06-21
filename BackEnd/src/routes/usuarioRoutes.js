@@ -13,6 +13,28 @@ function validarDadosUsuario(dadosUsuario) {
   return null;
 }
 
+function tratarErroBancoUsuario(erro, acao) {
+  console.error(`Erro ao ${acao} usuario:`, erro.message);
+
+  if (erro.code === '23505') {
+    return { statusHttp: 400, mensagem: 'Email ja cadastrado' };
+  }
+
+  if (erro.code === 'ECONNREFUSED') {
+    return { statusHttp: 500, mensagem: 'Nao foi possivel conectar ao PostgreSQL. Verifique se o banco esta rodando.' };
+  }
+
+  if (erro.code === '42P01') {
+    return { statusHttp: 500, mensagem: 'Tabela users nao encontrada. Execute o script SQL inicial.' };
+  }
+
+  if (erro.code === '42703') {
+    return { statusHttp: 500, mensagem: 'Coluna esperada nao existe na tabela users. Verifique o script SQL do banco.' };
+  }
+
+  return { statusHttp: 500, mensagem: `Erro ao ${acao} usuario` };
+}
+
 rotasUsuarios.post('/', async (req, res) => {
   try {
     const erroValidacao = validarDadosUsuario(req.body);
@@ -33,17 +55,11 @@ rotasUsuarios.post('/', async (req, res) => {
       data: usuario
     });
   } catch (erro) {
-    if (erro.code === '23505') {
-      return res.status(400).json({
-        status: false,
-        mensagem: 'Email ja cadastrado',
-        data: null
-      });
-    }
+    const erroTratado = tratarErroBancoUsuario(erro, 'criar');
 
-    return res.status(500).json({
+    return res.status(erroTratado.statusHttp).json({
       status: false,
-      mensagem: 'Erro ao criar usuario',
+      mensagem: erroTratado.mensagem,
       data: null
     });
   }
@@ -95,9 +111,11 @@ rotasUsuarios.post('/login', async (req, res) => {
       data: usuario
     });
   } catch (erro) {
-    return res.status(500).json({
+    const erroTratado = tratarErroBancoUsuario(erro, 'realizar login');
+
+    return res.status(erroTratado.statusHttp).json({
       status: false,
-      mensagem: 'Erro ao realizar login',
+      mensagem: erroTratado.mensagem,
       data: null
     });
   }

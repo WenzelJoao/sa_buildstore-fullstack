@@ -22,7 +22,7 @@ const ExamsCounter = () => {
     }, [])
 
     return (
-        <div className='bg-white shadow-sm rounded-lg border border-stone-200 p-6 flex flex-col items-center w-60'>
+        <div className='bg-white shadow-sm rounded-lg border border-stone-200 p-6 flex min-h-32 w-full flex-col items-center justify-center'>
             <h2 className='text-xl font-bold flex items-center gap-2 text-slate-900'>
                 <FaListAlt className='text-sky-700' />{stockCounter}
             </h2>
