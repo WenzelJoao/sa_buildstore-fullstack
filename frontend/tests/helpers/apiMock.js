@@ -35,6 +35,55 @@ export async function mockApi(page, options = {}) {
   const produtosStatus = options.produtosStatus ?? 200;
   const produtosMensagem = options.produtosMensagem ?? 'Produtos listados com sucesso';
 
+  await page.route('**/produtos/*/comprar', async (route) => {
+    const request = route.request();
+    const body = request.postDataJSON();
+    const url = new URL(request.url());
+    const produtoId = Number(url.pathname.split('/').at(-2));
+    const produto = produtosResposta.find((item) => item.id === produtoId);
+
+    if (options.compraStatus && options.compraStatus >= 400) {
+      await route.fulfill({
+        status: options.compraStatus,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: false,
+          mensagem: options.compraMensagem ?? 'Estoque insuficiente',
+          data: null
+        })
+      });
+      return;
+    }
+
+    if (!produto) {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: false,
+          mensagem: 'Produto nao encontrado',
+          data: null
+        })
+      });
+      return;
+    }
+
+    const quantidadeAtualizada = Number(produto.quantidade) - Number(body.quantidade);
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: true,
+        mensagem: options.compraMensagem ?? 'Compra realizada com sucesso',
+        data: {
+          ...produto,
+          quantidade: quantidadeAtualizada
+        }
+      })
+    });
+  });
+
   await page.route('**/usuarios/login', async (route) => {
     const request = route.request();
     const body = request.postDataJSON();
