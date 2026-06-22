@@ -90,9 +90,6 @@ const MedicalRecordList = () => {
                 <p className="text-sm text-stone-700">
                   <strong>Estoque:</strong> {produto.quantidade} unidades
                 </p>
-                <p className="mt-3 text-xs text-stone-500">
-                  Produto sincronizado com PostgreSQL
-                </p>
               </article>
             ))
           ) : (
